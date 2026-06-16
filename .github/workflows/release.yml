@@ -1,0 +1,46 @@
+name: Build & Release
+
+on:
+  push:
+    tags: ['v*']        # tag like v3.0.0 triggers a release
+  workflow_dispatch:    # manual run from the Actions tab
+
+permissions:
+  contents: write       # needed for softprops/action-gh-release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build jars
+        run: ./gradlew --no-daemon build
+
+      - name: Show artifacts
+        run: ls -lh build/libs
+
+      - name: Upload as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: badlion-jars
+          path: build/libs/*.jar
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Badlion ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            build/libs/badlion.jar
+            build/libs/badlion-all.jar

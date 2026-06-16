@@ -576,17 +576,13 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 
                     if (guiaccountlogin.isMouseOverAddAccountButton(mouseX, mouseY, 25))
                     {
-                        if (this.emailField != null && !this.emailField.getText().isEmpty() && this.passwordField != null && !this.passwordField.getText().isEmpty())
-                        {
-                            boolean flag = Wrapper.getInstance().getModProfileManager().getAccountManager().loginProfile(this.emailField.getText(), this.passwordField.getText());
-
-                            if (flag)
-                            {
-                                this.emailField.reset();
-                                this.passwordField.reset();
-                                this.loginPageOpen = false;
-                            }
-                        }
+                        // Microsoft auth: ignores fields, opens browser, finishes async.
+                        // We close the login pane immediately; the new account will
+                        // appear in the user list once MS auth completes.
+                        Wrapper.getInstance().getModProfileManager().getAccountManager().loginProfile("", "");
+                        if (this.emailField != null) this.emailField.reset();
+                        if (this.passwordField != null) this.passwordField.reset();
+                        this.loginPageOpen = false;
                     }
                     else
                     {
